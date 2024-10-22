@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { listProduct } from '../service/ProductService'
+import { deleteProduct, listProduct } from '../service/ProductService'
 import { useNavigate } from 'react-router-dom'
 
 
@@ -10,15 +10,19 @@ const [product, setProduct] = useState([])
 const navigator = useNavigate();
 
 useEffect(()=>{
+    getAllProducts();
 
-    listProduct().then((response)=>{
-        setProduct(response.data);
+},[])
+function getAllProducts(){
+
+    listProduct().then((responce)=>{
+        setProduct(responce.data);
         }).catch(error=>{
             console.error(error);
 
         })
+}
 
-},[])
 function addProduct (){
     navigator('/add-product')
 }
@@ -26,6 +30,19 @@ function addProduct (){
 function updateProduct(id){
     navigator(`/productUpdate/${id}`)
 }
+
+function removeProduct(id){
+  
+    console.log(id);
+
+    deleteProduct(id).then((responce)=>{
+        getAllProducts();
+    }).catch(error=>{
+        console.log(error);
+
+    })
+}
+
  
   return (
     <div className='container'>
@@ -50,6 +67,9 @@ function updateProduct(id){
                             <td>{product.city}</td>
                             <td>
                                 <button className='btn btn-info' onClick={()=>updateProduct(product.id)}>Update</button>
+                                <button className='btn btn-danger' onClick={()=>removeProduct(product.id)}
+                                    style={{marginLeft:'10px'}}
+                                    >Delete</button>
                             </td>
                             
                         </tr>

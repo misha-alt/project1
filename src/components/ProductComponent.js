@@ -1,13 +1,15 @@
-import React, { useState } from 'react'
-import { createProduct } from '../service/ProductService'
-import { useNavigate } from 'react-router-dom'
+import React, { useEffect, useState } from 'react'
+import { createProduct, getProduct, updateProduct } from '../service/ProductService'
+import { useNavigate, useParams } from 'react-router-dom'
 
 const ProductComponent = () => {
   const [description, setDescription] = useState('')
   const [price, setPrice] = useState('')
   const [city, setCity] = useState('')
 
-  const [errors, setErrors]=useState({
+
+  const {id} = useParams();
+    const [errors, setErrors]=useState({
     description: '',
     price: '',
     city: ''
@@ -17,20 +19,45 @@ const ProductComponent = () => {
 
  const navigator = useNavigate()
 
+
+ useEffect(()=>{
+    if(id){
+      getProduct(id).then((responce)=>{
+        setDescription(responce.data.description);
+        setPrice(responce.data.price);
+        setCity(responce.data.city);
+      }).catch(error=>{
+        console.error(error);
+      })
+    }
+ }, [id])
+
   
   
-  function saveProduct(e){
+  function saveOrUpdateProduct(e){
     e.preventDefault();
 
-
-    if (validateForm()){
-      const product = {description, price, city}
+    const product = {description, price, city}
     console.log(product)
 
-    createProduct(product).then((responce)=>{
-      console.log(responce.data);
-      navigator('/product')
-    })
+    if (validateForm()){
+
+      if(id){
+        updateProduct(id, product).then((responce)=>{
+          console.log(responce.data);
+          navigator('/product');
+        }).catch(error=>{
+          console.error(error);
+        })
+      }else{
+        createProduct(product).then((responce)=>{
+          console.log(responce.data);
+          navigator('/product');
+        }).catch(error=>{
+          console.error(error);
+        })
+      }
+
     }
 
     
@@ -46,13 +73,29 @@ function validateForm(){
     errorsCopy.description = 'descriprion is required';
     valid = false;
   }
+// =======================================
 
-  if(price.trim()){
+if (typeof price === 'string' && price.trim()) {
+  const numericPrice = parseInt(price, 10);
+
+  if (!isNaN(numericPrice)) {
     errorsCopy.price = '';
-  }else{
-    errorsCopy.price = 'price is required';
-    valid = false;
+  } else {
+      console.error('Price must be a valid number');
   }
+} else {
+  errorsCopy.price = 'price is required';
+    valid = false;
+}
+
+  // if(price.trim()){
+  //   errorsCopy.price = '';
+    
+  // }else{
+  //   errorsCopy.price = 'price is required';
+  //   valid = false;
+  // }
+  // =================================
 
   if(city.trim()){
     errorsCopy.city = '';
@@ -66,11 +109,22 @@ function validateForm(){
 
 }
 
+function pageTitile(){
+
+  if(id){
+    return    <h2 className='text-center'>Update product</h2>
+  }else{
+   return <h2 className='text-center'>Add product</h2>
+  }
+}
+
   return (
     <div className='container'>
       <div className='row'>
         <div className='card col-md-6 offset-md-3 offset-md-3'>
-          <h2 className='text-center'>Add product</h2>
+          {
+            pageTitile()
+          }
             <div className='card-body'>
               <form>
                 <div className='form-group mb-2'>
@@ -110,7 +164,7 @@ function validateForm(){
                     {errors.description && <div className='invalid-feedback'>{errors.description}</div>}
                 </div>
 
-                <button type="button" className='btn btn-success' onClick={saveProduct} >Submit</button>
+                <button type="button" className='btn btn-success' onClick={saveOrUpdateProduct} >Submit</button>
 
               </form>
 

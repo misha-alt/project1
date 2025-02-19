@@ -11,3 +11,8 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+.table td {
+  max-width: 200px; /* Ограничение ширины */
+  word-wrap: break-word;
+  white-space: normal;
+}

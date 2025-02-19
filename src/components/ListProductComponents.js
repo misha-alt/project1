@@ -27,6 +27,10 @@ function addProduct (){
     navigator('/add-product')
 }
 
+function addComment (){
+    navigator('/sendComment')
+}
+
 function updateProduct(id){
     navigator(`/productUpdate/${id}`)
 }
@@ -70,6 +74,7 @@ function removeProduct(id){
                                 <button className='btn btn-danger' onClick={()=>removeProduct(product.id)}
                                     style={{marginLeft:'10px'}}
                                     >Delete</button>
+                                    <button className='btn btn-info' onClick={()=>addComment(product.id)}>Comment</button>
                             </td>
                             
                         </tr>

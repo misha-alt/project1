@@ -129,13 +129,13 @@ function pageTitile(){
               <form>
                 <div className='form-group mb-2'>
                   <lable className='form-lable'>description</lable>
-                    <input type='text'
+                    <textarea type='text'
                            placeholder='Enter product description' 
                            name='name of product' 
                            value={description} 
                            className={`form-control is ${errors.description ? 'is-invalid': ''}`}
                            onChange={(e)=>setDescription(e.target.value)}>
-                    </input>    
+                    </textarea>    
                     {errors.description && <div className='invalid-feedback'>{errors.description}</div>}    
                 </div>
 

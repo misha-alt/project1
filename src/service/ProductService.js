@@ -1,35 +1,59 @@
 import axios from "axios";
 
-const REST_API_BACE_URL = 'http://localhost:8080/test';
-
-//test jira======================================================
-const JIRA_MANAGER_URL = 'http://localhost:8099/manager';
-export const managerName =() =>axios.get(JIRA_MANAGER_URL);
-
-//==============================================================
-
-const apiClient = axios.create({
-    baseURL: REST_API_BACE_URL,
-});
-
-// Добавьте интерсептор для добавления токена в заголовки
-apiClient.interceptors.request.use(config => {
-    const token = localStorage.getItem('authToken');
-    if (token) {
+// Общая функция для создания клиентов API
+const createApiClient = (baseURL) => {
+    const client = axios.create({ baseURL });
+  
+    client.interceptors.request.use(config => {
+      const token = localStorage.getItem('authToken');
+      if (token) {
         config.headers['Authorization'] = `Bearer ${token}`;
-    }
-    return config;
-}, error => {
-    return Promise.reject(error);
-});
+      } else {
+        redirectUserToLogin();//перенаправление на странцу логина
+      }
+      return config;
+    }, error => Promise.reject(error));
+  
+    return client;
+  };
 
-// Функции API
-export const listProduct = () => apiClient.get('/'); // Получение всех продуктов
+const redirectUserToLogin = () =>{
+    localStorage.removeItem("authToken"); // Удаляем токен из localStorage
+    window.location.href = "/login"; //перенаправление на страницу логина
+}
 
-export const createProduct = (product) => apiClient.post('/', product); // Создание продукта
 
-export const getProduct = (productId) => apiClient.get(`/${productId}`); // Получение продукта по ID
+// Обработка ошибок (например, 401 Unauthorized)
+// createApiClient.interceptors.response.use(
+//     (response) => response,
+//     (error) => {
+//       if (error.response && error.response.status === 401) {
+//         redirectUserToLogin();
+//       }
+//       return Promise.reject(error);
+//     }
+//   );
 
-export const updateProduct = (productId, product) => apiClient.put(`/${productId}`, product); // Обновление продукта
+// Клиенты для разных API
+export const productApiClient = createApiClient('http://localhost:8080/test');
+export const commentApiClient = createApiClient('http://localhost:8080/comment');
+export const jiraManagerApiClient = createApiClient('http://localhost:8099/manager');
+export const userApiClient = createApiClient('http://localhost:8080/reg'); // Добавили клиент для регистрации
 
-export const deleteProduct = (productId) => apiClient.delete(`/${productId}`); // Удаление продукта
+// Функции для работы с продуктами
+export const listProduct = () => productApiClient.get('/');
+export const createProduct = (product) => productApiClient.post('/', product);
+export const getProduct = (productId) => productApiClient.get(`/${productId}`);
+export const updateProduct = (productId, product) => productApiClient.put(`/${productId}`, product);
+export const deleteProduct = (productId) => productApiClient.delete(`/${productId}`);
+
+// Функции для работы с комментариями
+export const sendComment = (comment) => commentApiClient.post('/', { comment });
+export const listComment = () => commentApiClient.get('/');
+export const deleteComment = (commentId) => commentApiClient.delete(`/${commentId}`);
+
+// Функция для работы с JIRA
+export const getManagerName = () => jiraManagerApiClient.get('/');
+export const createUser = (user) => userApiClient.post('/', user);
+
+export default redirectUserToLogin;
